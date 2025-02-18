@@ -14,7 +14,7 @@
         Datenverwaltung: Speichern und Abrufen der Finanzdaten aus einer SQLite-Datenbank.
         Benutzerfreundliche Oberfläche: Intuitive Bedienung und übersichtliche Darstellung der Informationen.
 
-###2. Technische Umsetzung
+### 2. Technische Umsetzung
 
     Programmiersprache: Python
     GUI-Bibliothek: FreeSimpleGUI
@@ -23,7 +23,7 @@
         matplotlib oder seaborn für die Erstellung von Diagrammen und Grafiken.
         pandas für die Datenverarbeitung und -analyse.
 
-###3. Datenbankdesign (SQLite)
+### 3. Datenbankdesign (SQLite)
 
     Tabellen:*
         transactions: Tabelle zur Speicherung der Einnahmen und Ausgaben.*
@@ -36,7 +36,7 @@
         transactions und categories: Eine Transaktion gehört zu einer Kategorie (Foreign Key category_id in transactions).
         budgets und categories: Ein Budget bezieht sich auf eine Kategorie (Foreign Key category_id in budgets).
 
-###4. GUI-Design (FreeSimpleGUI)
+### 4. GUI-Design (FreeSimpleGUI)
 
     Hauptfenster:*
         Eingabefelder für neue Transaktionen (Betrag, Kategorie, Datum, Notizen).
@@ -45,7 +45,7 @@
         Bereich zur Anzeige von Übersichten und Berichten (Diagramme, Tabellen).
         Menü oder Buttons zur Navigation zwischen verschiedenen Funktionen (z.B. Budgetverwaltung, Berichte).
 
-###5. Programmstruktur (Python)
+### 5. Programmstruktur (Python)
 
     Klassen:*
         Transaction: Klasse zur Darstellung einer Transaktion.
@@ -58,7 +58,7 @@
         Funktionen zur Berechnung von Übersichten und Erstellung von Berichten.
         Funktionen zur Interaktion mit der Datenbank.
 
-###6. Entwicklungsprozess
+### 6. Entwicklungsprozess
 
     Datenbank erstellen: Zuerst die SQLite-Datenbank und die Tabellen erstellen.
     GUI entwerfen: Die Benutzeroberfläche mit FreeSimpleGUI gestalten.
@@ -67,7 +67,7 @@
     GUI und Funktionen verbinden: Die Benutzeroberfläche mit den Funktionen verbinden, sodass der Benutzer mit der Anwendung interagieren kann.
     Tests durchführen: Die Anwendung gründlich testen, um Fehler zu finden und zu beheben.
 
-###7. Zusätzliche Überlegungen
+### 7. Zusätzliche Überlegungen
 
     Benutzerauthentifizierung: Optional könnte eine Benutzerauthentifizierung implementiert werden, um die Finanzdaten vor unbefugtem Zugriff zu schützen.
     Datenexport: Die Möglichkeit zum Exportieren der Finanzdaten in verschiedene Formate (z.B. CSV, Excel) könnte hinzugefügt werden.
