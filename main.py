@@ -1,4 +1,4 @@
-# Finanzplaner von Tom und Casper
+# Finanzplaner von Tom und Caspar
 import sys
 
 import FreeSimpleGUI as sg
@@ -12,6 +12,9 @@ keys = {
     "login_pw"          : "-LOGIN_PW-",
     "reg_frame"         : "-REG_FRAME-",
     "login_frame"       : "-LOGIN_FRAME-",
+    "init_frame"        : "-INIT_FRAME-",
+    "login_btn"         : "-LOGIN-BTN-",
+    "reg_btn"           : "-REG_BTN-",
 }
 
 reg_col_1 = [[sg.T("Username")],[sg.T("Passwort")],[sg.T("Passwort wiederholen")]]
@@ -35,12 +38,18 @@ login_frame = [[sg.Col(layout=login_col_1), sg.Col(layout=login_col_2)],]
 
 initial_window = [
     [
-        sg.Frame(title="Registrierung", layout=reg_frame, visible=False),
-        sg.Frame(title="Anmelden", layout=login_frame, visible=False),
+        sg.Frame(title="Registrierung", layout=reg_frame, visible=False, key=keys["reg_frame"]),
+        sg.Frame(title="Anmelden", layout=login_frame, visible=False, key=keys["login_frame"]),
     ],
+    [
+        sg.Button(button_text="Anmelden", key=keys["login_btn"]),
+        sg.Button(button_text="Registrieren", key=keys["reg_btn"]),
+    ]
 ]
 
-layout = [[sg.Text("Test")],]
+layout = [
+    [sg.Frame(title="", layout=initial_window, visible=True, key=keys["init_frame"])],
+]
 
 
 def main():
