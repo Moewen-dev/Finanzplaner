@@ -71,9 +71,16 @@ def main():
             window[keys["reg_ok_btn"]].update(visible=True)
             window[keys["reg_btn"]].update(visible=False)
             window[keys["login_btn"]].update(visible=False)
+        elif event == keys["login_btn"]:
+            window[keys["login_frame"]].update(visible=True)
+            window[keys["login_ok_btn"]].update(visible=True)
+            window[keys["reg_btn"]].update(visible=False)
+            window[keys["login_btn"]].update(visible=False)
 
         if event == keys["reg_ok_btn"]:
             print(value[keys["reg_username"]])
+        elif event == keys["login_ok_btn"]:
+            print(value[keys["login_username"]])
 
 
 if __name__ == "__main__":
