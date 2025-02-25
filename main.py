@@ -15,6 +15,8 @@ keys = {
     "init_frame"        : "-INIT_FRAME-",
     "login_btn"         : "-LOGIN-BTN-",
     "reg_btn"           : "-REG_BTN-",
+    "reg_ok_btn"        : "-REG_OK_BTN-",
+    "login_ok_btn"      : "-LOGIN_OK_BTN-"
 }
 
 reg_col_1 = [[sg.T("Username")],[sg.T("Passwort")],[sg.T("Passwort wiederholen")]]
@@ -44,6 +46,8 @@ initial_window = [
     [
         sg.Button(button_text="Anmelden", key=keys["login_btn"]),
         sg.Button(button_text="Registrieren", key=keys["reg_btn"]),
+        sg.Button(button_text="Ok", key=keys["reg_ok_btn"], visible=False),
+        sg.Button(button_text="Ok", key=keys["login_ok_btn"], visible=False),
     ]
 ]
 
@@ -61,6 +65,15 @@ def main():
 
         if event == sg.WIN_CLOSED:
             break
+
+        if event == keys["reg_btn"]:
+            window[keys["reg_frame"]].update(visible=True)
+            window[keys["reg_ok_btn"]].update(visible=True)
+            window[keys["reg_btn"]].update(visible=False)
+            window[keys["login_btn"]].update(visible=False)
+
+        if event == keys["reg_ok_btn"]:
+            print(value[keys["reg_username"]])
 
 
 if __name__ == "__main__":
