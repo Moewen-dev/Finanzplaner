@@ -1,6 +1,7 @@
 # Finanzplaner von Tom und Caspar
 import sys
 import sqlite3
+import hashlib
 import FreeSimpleGUI as sg
 
 
@@ -20,9 +21,6 @@ keys = {
     "reg_btn"           : "-REG_BTN-",
     "reg_ok_btn"        : "-REG_OK_BTN-",
     "login_ok_btn"      : "-LOGIN_OK_BTN-",
-    "login_erf"         : "-LOGIN_ERF-",
-    "login_fal"         : "-LOGIN_FAL-",
-    "login_fal_vers"    : "-LOGIN_FAL_VERS-"
 }
 
 reg_col_1 = [[sg.T("Username")],[sg.T("Passwort")],[sg.T("Passwort wiederholen")]]
@@ -42,16 +40,11 @@ login_col_2 = [
     [sg.Input(default_text="", key=keys["login_pw"])],
 ]
 
-login_col_3 = [
-    [sg.Text('', size=(30,1), key=keys["login_erf"], text_color='green')],
-    [sg.Text('', size=(30,1), key=keys["login_fal"], text_color='red')],
-]
-
 login_frame = [[sg.Col(layout=login_col_1), sg.Col(layout=login_col_2)],]
 
 initial_window = [
     [
-        sg.Frame(title="Registrierung", layout=reg_frame, visible=False, key=keys["reg_frame"]),
+        sg.Frame(title="Registrieren", layout=reg_frame, visible=False, key=keys["reg_frame"]),
         sg.Frame(title="Anmelden", layout=login_frame, visible=False, key=keys["login_frame"]),
     ],
     [
@@ -59,9 +52,6 @@ initial_window = [
         sg.Button(button_text="Registrieren", key=keys["reg_btn"]),
         sg.Button(button_text="Ok", key=keys["reg_ok_btn"], visible=False),
         sg.Button(button_text="Ok", key=keys["login_ok_btn"], visible=False),
-        sg.Text('Sie wurden erfolgreich Angemeldet!', size=(30,1), key=keys["login_erf"], visible=False),
-        sg.Text('Anmeldename oder Passwort falsch, probieren sie es bitte erneut!', size=(50,1), key=keys["login_fal"], visible=False),
-        sg.Text('verusche noch überig!', size=(30,1), key=keys["login_fal_vers"], visible=False)
     ]
 ]
 
@@ -71,18 +61,18 @@ layout = [
 
 sql_statements = [
     """CREATE TABLE IF NOT EXISTS userdata (
-    id INTEGER PRIMARY KEY, 
+    id INTEGER NOT NULL PRIMARY KEY, 
     username TEXT NOT NULL,
     pw_hash TEXT NOT NULL
     );""",
     """CREATE TABLE IF NOT EXISTS categories (
-    id INTEGER PRIMARY KEY,
+    id INTEGER NOT NULL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES userdata (id)
     );""",
     """CREATE TABLE IF NOT EXISTS budgets (
-    id INTEGER PRIMARY KEY,
+    id INTEGER NOT NULL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     category_id INTEGER NOT NULL,
     name TEXT NOT NULL,
@@ -93,7 +83,7 @@ sql_statements = [
     FOREIGN KEY (category_id) REFERENCES categories (id)
     );""",
     """CREATE TABLE IF NOT EXISTS transactions (
-    id INTEGER PRIMARY KEY,
+    id INTEGER NOT NULL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     category_id INTEGER NOT NULL,
     amount REAL NOT NULL,
@@ -106,21 +96,39 @@ sql_statements = [
 
 class User:
 
-    def __init__(self, user_id, username, pw_hash):
-        self.user_id = user_id
+    def __init__(self, username, pw_hash):
+        self.logged_in = False
+
+        self.user_id = 0
         self.username = username
         self.pw_hash = pw_hash
 
-    def save(self, con, cur):
-        pass
+    def save(self, connection, cursor):
+        cursor.execute("INSERT INTO userdata (username, pw_hash) VALUES (?, ?)",(self.username, self.pw_hash))
+        connection.commit()
+
+    def debug_print(self):
+        print(f"""User Id:    {self.user_id}
+Username:   {self.username}
+Pw Hash:    {self.pw_hash}""")
 
 
-def main(con, cur):
+def login(userdata, username, pw_hash):
+    for data in userdata:
+        data_user_id = data[0]
+        data_username = data[1]
+        data_pw_hash = data[2]
+        if data_username == username and data_pw_hash == pw_hash:
+            return True, data_user_id
+    return False, 0
+
+
+
+def main(connection, cursor):
 
     window = sg.Window(title="Finanzplaner", layout=layout)
 
-    # DB Init
-
+    user = User(None, None)
 
     while True:
         event, value = window.read()
@@ -139,21 +147,49 @@ def main(con, cur):
             window[keys["login_ok_btn"]].update(visible=True)
             window[keys["reg_btn"]].update(visible=False)
             window[keys["login_btn"]].update(visible=False)
-            versuche = 3
 
         if event == keys["reg_ok_btn"]:
-            print(value[keys["reg_username"]])
+            reg_pw = value[keys["reg_pw"]]
+            reg_pw_conf = value[keys["reg_pw_confirm"]]
+            username = value[keys["reg_username"]]
+
+            if username == "":
+                sg.popup_error("Username ist leer")
+                continue
+
+            if reg_pw != reg_pw_conf:
+                sg.popup_error("Passwort ist nicht gleich.")
+                continue
+
+            user.username = username
+            user.pw_hash = hashlib.sha512(str.encode(reg_pw)).hexdigest()
+            user.save(connection, cursor)
+
+            user.debug_print()
+
+            window[keys["reg_frame"]].update(visible=False)
+            window[keys["reg_ok_btn"]].update(visible=False)
+            window[keys["login_frame"]].update(visible=True)
+            window[keys["login_ok_btn"]].update(visible=True)
 
         if event == keys["login_ok_btn"]:
-            if value[keys["login_username"]] == "admin" and value[keys["login_pw"]] == "admin123":
-                window[keys["login_erf"]].update(visible=True)
-            else:
-                versuche -= 1
-                window[keys["login_fal"]].update(visible=True)
-                window[keys["login_fal_vers"]].update(f"Versuche übrig: {versuche}", visible=True)
-                if versuche == 0:
-                    sg.popup_error("Zu viele fehlgeschlagene Versuche! Programm wird beendet.")
-                    break
+            userdata = cursor.execute("SELECT * FROM userdata").fetchall()
+            username = value[keys["login_username"]]
+            password = str.encode(value[keys["login_pw"]])
+
+            pw_hash = hashlib.sha512(password).hexdigest()
+            success, user_id = login(userdata, username, pw_hash)
+            if not success:
+                sg.popup_ok("Anmeldung fehlgeschlagen")
+                continue
+            user.user_id = user_id
+            user.username = username
+            user.pw_hash = pw_hash
+
+            window[keys["login_frame"]].update(visible=False)
+            window[keys["login_ok_btn"]].update(visible=False)
+            window[keys["init_frame"]].update(f"Benutzer: {user.username}")
+            user.debug_print()
 
 
 if __name__ == "__main__":
@@ -163,10 +199,11 @@ if __name__ == "__main__":
 
             for statement in sql_statements:
                 cur.execute(statement)
+
             con.commit()
 
             main(con, cur)
 
-            sys.exit(0)
+        sys.exit(0)
     except sqlite3.OperationalError as e:
         print(f"Failed to Open Database: {e}")
