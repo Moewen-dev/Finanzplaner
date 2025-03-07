@@ -1,9 +1,10 @@
 # Finanzplaner von Tom und Caspar
 import sys
-from asyncio import wait_for
-from fileinput import close
-
+import sqlite3
 import FreeSimpleGUI as sg
+
+
+db_name = "data.db"
 
 
 keys = {
@@ -32,7 +33,6 @@ reg_col_2 = [
     [sg.Input(default_text="", key=keys["reg_pw_confirm"])],
 ]
 
-
 reg_frame = [[sg.Col(layout=reg_col_1), sg.Col(layout=reg_col_2)],]
 
 login_col_1 = [[sg.T("Username:")],[sg.T("Passwort:")],]
@@ -41,6 +41,7 @@ login_col_2 = [
     [sg.Input(default_text="", key=keys["login_username"])],
     [sg.Input(default_text="", key=keys["login_pw"])],
 ]
+
 login_col_3 = [
     [sg.Text('', size=(30,1), key=keys["login_erf"], text_color='green')],
     [sg.Text('', size=(30,1), key=keys["login_fal"], text_color='red')],
@@ -69,12 +70,11 @@ layout = [
 ]
 
 
-def main():
+def main(con, cur):
 
     window = sg.Window(title="Finanzplaner", layout=layout)
 
     angemeldet = False
-
 
     while True:
         event, value = window.read()
@@ -109,5 +109,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-    sys.exit(0)
+    try:
+        with sqlite3.connect(db_name) as con:
+            cur = con.cursor()
+            main(con, cur)
+            sys.exit(0)
+    except sqlite3.OperationalError as e:
+        print(f"Failed to Open Database: {e}")
