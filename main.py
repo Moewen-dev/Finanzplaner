@@ -69,12 +69,58 @@ layout = [
     [sg.Frame(title="", layout=initial_window, visible=True, key=keys["init_frame"])],
 ]
 
+sql_statements = [
+    """CREATE TABLE IF NOT EXISTS userdata (
+    id INTEGER PRIMARY KEY, 
+    username TEXT NOT NULL,
+    pw_hash TEXT NOT NULL
+    );""",
+    """CREATE TABLE IF NOT EXISTS categories (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES userdata (id)
+    );""",
+    """CREATE TABLE IF NOT EXISTS budgets (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    category_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    amount REAL NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES userdata (id),
+    FOREIGN KEY (category_id) REFERENCES categories (id)
+    );""",
+    """CREATE TABLE IF NOT EXISTS transactions (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    category_id INTEGER NOT NULL,
+    amount REAL NOT NULL,
+    date TEXT NOT NULL,
+    note TEXT,
+    FOREIGN KEY (user_id) REFERENCES userdata (id),
+    FOREIGN KEY (category_id) REFERENCES categories (id)
+    );"""
+]
+
+class User:
+
+    def __init__(self, user_id, username, pw_hash):
+        self.user_id = user_id
+        self.username = username
+        self.pw_hash = pw_hash
+
+    def save(self, con, cur):
+        pass
+
 
 def main(con, cur):
 
     window = sg.Window(title="Finanzplaner", layout=layout)
 
-    angemeldet = False
+    # DB Init
+
 
     while True:
         event, value = window.read()
@@ -87,7 +133,8 @@ def main(con, cur):
             window[keys["reg_ok_btn"]].update(visible=True)
             window[keys["reg_btn"]].update(visible=False)
             window[keys["login_btn"]].update(visible=False)
-        elif event == keys["login_btn"]:
+
+        if event == keys["login_btn"]:
             window[keys["login_frame"]].update(visible=True)
             window[keys["login_ok_btn"]].update(visible=True)
             window[keys["reg_btn"]].update(visible=False)
@@ -96,7 +143,8 @@ def main(con, cur):
 
         if event == keys["reg_ok_btn"]:
             print(value[keys["reg_username"]])
-        elif event == keys["login_ok_btn"]:
+
+        if event == keys["login_ok_btn"]:
             if value[keys["login_username"]] == "admin" and value[keys["login_pw"]] == "admin123":
                 window[keys["login_erf"]].update(visible=True)
             else:
@@ -112,7 +160,13 @@ if __name__ == "__main__":
     try:
         with sqlite3.connect(db_name) as con:
             cur = con.cursor()
+
+            for statement in sql_statements:
+                cur.execute(statement)
+            con.commit()
+
             main(con, cur)
+
             sys.exit(0)
     except sqlite3.OperationalError as e:
         print(f"Failed to Open Database: {e}")
