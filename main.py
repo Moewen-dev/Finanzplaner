@@ -124,30 +124,37 @@ def login(userdata, username, pw_hash):
 
 
 
+
+
 def main(connection, cursor):
 
     window = sg.Window(title="Finanzplaner", layout=layout)
 
     user = User(None, None)
 
+    # Mainloop
     while True:
         event, value = window.read()
 
+        # Beende Main Loop wenn das Fenster geschlossen wird
         if event == sg.WIN_CLOSED:
             break
 
+        # Zeige den Registrierungsbereich
         if event == keys["reg_btn"]:
             window[keys["reg_frame"]].update(visible=True)
             window[keys["reg_ok_btn"]].update(visible=True)
             window[keys["reg_btn"]].update(visible=False)
             window[keys["login_btn"]].update(visible=False)
 
+        # Zeige den Loginbereich
         if event == keys["login_btn"]:
             window[keys["login_frame"]].update(visible=True)
             window[keys["login_ok_btn"]].update(visible=True)
             window[keys["reg_btn"]].update(visible=False)
             window[keys["login_btn"]].update(visible=False)
 
+        # Registrierungslogick
         if event == keys["reg_ok_btn"]:
             reg_pw = value[keys["reg_pw"]]
             reg_pw_conf = value[keys["reg_pw_confirm"]]
@@ -172,15 +179,15 @@ def main(connection, cursor):
             window[keys["login_frame"]].update(visible=True)
             window[keys["login_ok_btn"]].update(visible=True)
 
+        # Anmeldelogick
         if event == keys["login_ok_btn"]:
             userdata = cursor.execute("SELECT * FROM userdata").fetchall()
             username = value[keys["login_username"]]
-            password = str.encode(value[keys["login_pw"]])
+            pw_hash = hashlib.sha512(str.encode(value[keys["login_pw"]])).hexdigest()
 
-            pw_hash = hashlib.sha512(password).hexdigest()
             success, user_id = login(userdata, username, pw_hash)
             if not success:
-                sg.popup_ok("Anmeldung fehlgeschlagen")
+                sg.popup_ok(f"Anmeldung fehlgeschlagen.\nBenutzername oder Passwort falsch?")
                 continue
             user.user_id = user_id
             user.username = username
@@ -207,3 +214,4 @@ if __name__ == "__main__":
         sys.exit(0)
     except sqlite3.OperationalError as e:
         print(f"Failed to Open Database: {e}")
+        sys.exit(1)
