@@ -3,7 +3,7 @@ import sys
 import sqlite3
 import hashlib
 import FreeSimpleGUI as sg
-
+from FreeSimpleGUI import TITLE_LOCATION_TOP_LEFT
 
 db_name = "data.db"
 
@@ -21,6 +21,13 @@ keys = {
     "reg_btn"           : "-REG_BTN-",
     "reg_ok_btn"        : "-REG_OK_BTN-",
     "login_ok_btn"      : "-LOGIN_OK_BTN-",
+    "main_frame"        : "-MAIN_FRAME-",
+    "budget_frame"      : "-BUDGET_FRAME-",
+    "category_farme"    : "-CATEGORY-FRAME-",
+    "tr_act_frame"      : "-TR_ACT_FRAME-", # tr_act = transaction
+    "budget_fr_btn"     : "-BUDGET_FR_BTN-",
+    "category_fr_btn"   : "-CATEGORY_FR_BTN-",
+    "tr_act_fr_btn"     : "-TR_ACT_FR_BTN-",
 }
 
 reg_col_1 = [[sg.T("Username")],[sg.T("Passwort")],[sg.T("Passwort wiederholen")]]
@@ -55,8 +62,36 @@ initial_window = [
     ]
 ]
 
+budget_frame = [
+    [],
+]
+
+category_frame = [
+    [],
+]
+
+tr_act_frame = [
+    [],
+]
+
+main_frame = [
+    [
+        sg.Frame(title="Budgets", title_location=TITLE_LOCATION_TOP_LEFT, layout=budget_frame, key=keys["budget_frame"], visible=False),
+        sg.Frame(title="Transaktionen", title_location=TITLE_LOCATION_TOP_LEFT, layout=category_frame, key=keys["category_farme"], visible=False),
+        sg.Frame(title="Kategorien", title_location=TITLE_LOCATION_TOP_LEFT, layout=tr_act_frame, key=keys["tr_act_frame"], visible=False)
+    ],
+    [
+        sg.B(button_text="Budgets", key=keys["budget_fr_btn"]),
+        sg.B(button_text="Transaktionen", key=keys["tr_act_fr_btn"]),
+        sg.B(button_text="Kategorien", key=keys["category_fr_btn"]),
+    ]
+]
+
 layout = [
-    [sg.Frame(title="", layout=initial_window, visible=True, key=keys["init_frame"])],
+    [
+        sg.Frame(title="", layout=initial_window, visible=True, key=keys["init_frame"]),
+        sg.Frame(title="", layout=main_frame, visible=False, key=keys["main_frame"]),
+    ],
 ]
 
 sql_statements = [
@@ -98,7 +133,6 @@ class User:
 
     def __init__(self, username, pw_hash):
         self.logged_in = False
-
         self.user_id = 0
         self.username = username
         self.pw_hash = pw_hash
@@ -111,6 +145,60 @@ class User:
         print(f"""User Id:    {self.user_id}
 Username:   {self.username}
 Pw Hash:    {self.pw_hash}""")
+
+
+class Transaction:
+
+    note = ""
+
+    def __init__(self, transaction_id, user_id, category_id, amount, date):
+        self.transaction_id = transaction_id
+        self.user_id = user_id
+        self.category_id = category_id
+        self.amount = amount
+        self.date = date
+
+    def debug_print(self):
+        print(f'''Transaction Id  :   {self.transaction_id}
+User Id         :   {self.user_id}
+Category Id     :   {self.category_id}
+Amount          :   {self.amount}
+Date            :   {self.date}
+Note            :   {self.note}''')
+
+
+class Budget:
+
+    def __init__(self, budget_id, user_id, category_id, name, amount, start_date, end_date):
+        self.budget_id = budget_id
+        self.user_id = user_id
+        self.category_id = category_id
+        self.name = name
+        self.amount = amount
+        self.start_date = start_date
+        self.end_date = end_date
+
+    def debug_print(self):
+        print(f'''Budget Id       :   {self.budget_id}
+User Id         :   {self.user_id}
+Category Id     :   {self.category_id}
+Name            :   {self.name}
+Amount          :   {self.amount}
+Start Date      :   {self.start_date}
+End Date        :   {self.end_date}''')
+
+
+class Category:
+
+    def __init__(self, category_id, user_id, name):
+        self.category_id = category_id
+        self.user_id = user_id
+        self.name = name
+
+    def debug_print(self):
+        print(f'''Category Id     :   {self.category_id}
+User Id         :   {self.user_id}
+Name            :   {self.name}''')
 
 
 def login(userdata, username, pw_hash):
@@ -136,7 +224,9 @@ def main(connection, cursor):
     while True:
         event, value = window.read()
 
-        # Beende Main Loop wenn das Fenster geschlossen wird
+        print(event)
+
+        # Beende den Mainloop, wenn das Fenster geschlossen wird
         if event == sg.WIN_CLOSED:
             break
 
@@ -193,10 +283,9 @@ def main(connection, cursor):
             user.username = username
             user.pw_hash = pw_hash
 
-            window[keys["login_frame"]].update(visible=False)
-            window[keys["login_ok_btn"]].update(visible=False)
-            window[keys["init_frame"]].update(f"Benutzer: {user.username}")
-            user.debug_print()
+            window[keys["init_frame"]].update(visible=False)
+            window[keys["main_frame"]].update(visible=True)
+            window[keys["main_frame"]].update(f"Benutzer: {user.username}")
 
 
 if __name__ == "__main__":
