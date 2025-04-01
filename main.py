@@ -23,11 +23,12 @@ keys = {
     "login_ok_btn"      : "-LOGIN_OK_BTN-",
     "main_frame"        : "-MAIN_FRAME-",
     "budget_frame"      : "-BUDGET_FRAME-",
-    "category_farme"    : "-CATEGORY-FRAME-",
+    "category_frame"    : "-CATEGORY-FRAME-",
     "tr_act_frame"      : "-TR_ACT_FRAME-", # tr_act = transaction
     "budget_fr_btn"     : "-BUDGET_FR_BTN-",
     "category_fr_btn"   : "-CATEGORY_FR_BTN-",
     "tr_act_fr_btn"     : "-TR_ACT_FR_BTN-",
+    "exit_btn"          : "-EXIT_BTN-",
 }
 
 reg_col_1 = [[sg.T("Username")],[sg.T("Passwort")],[sg.T("Passwort wiederholen")]]
@@ -77,7 +78,7 @@ tr_act_frame = [
 main_frame = [
     [
         sg.Frame(title="Budgets", title_location=TITLE_LOCATION_TOP_LEFT, layout=budget_frame, key=keys["budget_frame"], visible=False),
-        sg.Frame(title="Transaktionen", title_location=TITLE_LOCATION_TOP_LEFT, layout=category_frame, key=keys["category_farme"], visible=False),
+        sg.Frame(title="Transaktionen", title_location=TITLE_LOCATION_TOP_LEFT, layout=category_frame, key=keys["category_frame"], visible=False),
         sg.Frame(title="Kategorien", title_location=TITLE_LOCATION_TOP_LEFT, layout=tr_act_frame, key=keys["tr_act_frame"], visible=False)
     ],
     [
@@ -92,6 +93,7 @@ layout = [
         sg.Frame(title="", layout=initial_window, visible=True, key=keys["init_frame"]),
         sg.Frame(title="", layout=main_frame, visible=False, key=keys["main_frame"]),
     ],
+    [sg.Button(button_text="Exit", key=keys["exit_btn"])]
 ]
 
 sql_statements = [
@@ -227,7 +229,7 @@ def main(connection, cursor):
         print(event)
 
         # Beende den Mainloop, wenn das Fenster geschlossen wird
-        if event == sg.WIN_CLOSED:
+        if event == sg.WIN_CLOSED or event == keys["exit_btn"]:
             break
 
         # Zeige den Registrierungsbereich
@@ -244,7 +246,7 @@ def main(connection, cursor):
             window[keys["reg_btn"]].update(visible=False)
             window[keys["login_btn"]].update(visible=False)
 
-        # Registrierungslogick
+        # Registrierungslogik
         if event == keys["reg_ok_btn"]:
             reg_pw = value[keys["reg_pw"]]
             reg_pw_conf = value[keys["reg_pw_confirm"]]
@@ -269,7 +271,7 @@ def main(connection, cursor):
             window[keys["login_frame"]].update(visible=True)
             window[keys["login_ok_btn"]].update(visible=True)
 
-        # Anmeldelogick
+        # Anmeldelogik
         if event == keys["login_ok_btn"]:
             userdata = cursor.execute("SELECT * FROM userdata").fetchall()
             username = value[keys["login_username"]]
