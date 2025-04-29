@@ -2,6 +2,7 @@
 import sys
 import sqlite3
 import hashlib
+import datetime
 import FreeSimpleGUI as sg
 from FreeSimpleGUI import TITLE_LOCATION_TOP_LEFT
 
@@ -35,8 +36,8 @@ reg_col_1 = [[sg.T("Username")],[sg.T("Passwort")],[sg.T("Passwort wiederholen")
 
 reg_col_2 = [
     [sg.Input(default_text="", key=keys["reg_username"])],
-    [sg.Input(default_text="", key=keys["reg_pw"])],
-    [sg.Input(default_text="", key=keys["reg_pw_confirm"])],
+    [sg.Input(default_text="", key=keys["reg_pw"], password_char="*")],
+    [sg.Input(default_text="", key=keys["reg_pw_confirm"], password_char="*")],
 ]
 
 reg_frame = [[sg.Col(layout=reg_col_1), sg.Col(layout=reg_col_2)],]
@@ -45,7 +46,7 @@ login_col_1 = [[sg.T("Username:")],[sg.T("Passwort:")],]
 
 login_col_2 = [
     [sg.Input(default_text="", key=keys["login_username"])],
-    [sg.Input(default_text="", key=keys["login_pw"])],
+    [sg.Input(default_text="", key=keys["login_pw"], password_char="*")],
 ]
 
 login_frame = [[sg.Col(layout=login_col_1), sg.Col(layout=login_col_2)],]
@@ -213,7 +214,9 @@ def login(userdata, username, pw_hash):
     return False, 0
 
 
-
+def get_datetime():
+    raw_date = datetime.datetime.now()
+    return raw_date.strftime("%d.%m.%Y %X")
 
 
 def main(connection, cursor):
