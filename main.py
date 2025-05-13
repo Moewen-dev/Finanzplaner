@@ -30,6 +30,9 @@ keys = {
     "category_fr_btn"   : "-CATEGORY_FR_BTN-",
     "tr_act_fr_btn"     : "-TR_ACT_FR_BTN-",
     "exit_btn"          : "-EXIT_BTN-",
+    "category_text"     : "-CATEGORY_TEXT-",
+    "category_input"    : "-CATEGORY_INPUT-",
+    "category_in_ok_btn": "-CATEGORY_IN_OK_BTN-",
 }
 
 reg_col_1 = [[sg.T("Username")],[sg.T("Passwort")],[sg.T("Passwort wiederholen")]]
@@ -69,7 +72,8 @@ budget_frame = [
 ]
 
 category_frame = [
-    [],
+    [sg.Text(text="" ,key="category_txt")],
+    [sg.Input(default_text="Neue Kategorie", key=keys["category_input"], focus=True), sg.Button(button_text="Ok", key=keys["category_in_ok_btn"])],
 ]
 
 tr_act_frame = [
@@ -79,8 +83,8 @@ tr_act_frame = [
 main_frame = [
     [
         sg.Frame(title="Budgets", title_location=TITLE_LOCATION_TOP_LEFT, layout=budget_frame, key=keys["budget_frame"], visible=False),
-        sg.Frame(title="Transaktionen", title_location=TITLE_LOCATION_TOP_LEFT, layout=category_frame, key=keys["category_frame"], visible=False),
-        sg.Frame(title="Kategorien", title_location=TITLE_LOCATION_TOP_LEFT, layout=tr_act_frame, key=keys["tr_act_frame"], visible=False)
+        sg.Frame(title="Kategorien", title_location=TITLE_LOCATION_TOP_LEFT, layout=category_frame, key=keys["category_frame"], visible=False),
+        sg.Frame(title="Transactionen", title_location=TITLE_LOCATION_TOP_LEFT, layout=tr_act_frame, key=keys["tr_act_frame"], visible=False)
     ],
     [
         sg.B(button_text="Budgets", key=keys["budget_fr_btn"]),
@@ -231,6 +235,8 @@ def main(connection, cursor):
 
         print(event)
 
+        sg.theme_global("Dark")
+
         # Beende den Mainloop, wenn das Fenster geschlossen wird
         if event == sg.WIN_CLOSED or event == keys["exit_btn"]:
             break
@@ -292,6 +298,11 @@ def main(connection, cursor):
             window[keys["main_frame"]].update(visible=True)
             window[keys["main_frame"]].update(f"Benutzer: {user.username}")
 
+        # Zeige den Kategoriebereich
+        if event == keys["category_fr_btn"]:
+            window[keys["tr_act_frame"]].update(visible=False)
+            window[keys["budget_frame"]].update(visible=False)
+            window[keys["category_frame"]].update(visible=True)
 
 if __name__ == "__main__":
     try:
